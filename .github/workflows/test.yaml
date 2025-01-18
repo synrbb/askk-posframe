@@ -1,0 +1,26 @@
+name: Test
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      matrix:
+        emacs_version:
+          - '29.1'
+          - '29.2'
+          - '29.3'
+          - '29.4'
+          - release-snapshot
+        experimental: [false]
+        include:
+          - emacs_version: snapshot
+            experimental: true
+    steps:
+      - uses: purcell/setup-emacs@master
+        with:
+          version: ${{ matrix.emacs_version }}
+      - uses: actions/checkout@v4
+      - run: emacs --batch -Q --eval "(package-install 'posframe t)"
+      - run: emacs --batch -Q --eval "(package-vc-install '(askk :url \"https://github.com/synrbb/askk.git\"))"
+      - run: make check EMACS='emacs -f package-activate-all'
