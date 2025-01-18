@@ -1,6 +1,6 @@
-;;; askk-posframe.el --- ASKK candidates style with posframe -*- lexical-binding: t; -*-
+;;; askk-posframe.el --- askk candidates style with posframe -*- lexical-binding: t; -*-
 
-;; SPDX-FileCopyrightText: 2024-2025 synrbb
+;; SPDX-FileCopyrightText: 2024-2025 askk-posframe contributors
 ;; SPDX-License-Identifier: Apache-2.0 OR GPL-3.0-or-later
 
 ;; Version: 0.1.0
@@ -10,7 +10,7 @@
 
 ;;; Commentary:
 
-;; This package provides ASKK candidates style with posframe.
+;; This package provides askk candidates style with posframe.
 
 ;;; Code:
 
