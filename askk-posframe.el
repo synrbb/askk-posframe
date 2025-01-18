@@ -73,7 +73,7 @@ Only :background attribute is used.")
          (margin-width (ceiling (* font-width askk-posframe--margin-scale))))
     (posframe-show
      askk-posframe--buffer
-     :position (1+ askk-headword--start)
+     :position (1+ (overlay-start askk-preedit--overlay))
      :max-height askk-posframe--height
      :x-pixel-offset (- 0 margin-width askk-posframe--border-width)
      :border-width askk-posframe--border-width
