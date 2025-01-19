@@ -22,5 +22,4 @@ jobs:
           version: ${{ matrix.emacs_version }}
       - uses: actions/checkout@v4
       - run: emacs --batch -Q --eval "(package-install 'posframe t)"
-      - run: emacs --batch -Q --eval "(package-vc-install '(askk :url \"https://github.com/synrbb/askk.git\"))"
       - run: make check EMACS='emacs -f package-activate-all'

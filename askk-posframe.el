@@ -6,7 +6,7 @@
 ;; Version: 0.1.0
 ;; Keywords: i18n, text
 ;; URL: https://github.com/synrbb/askk-posframe
-;; Package-Requires: ((emacs "29.1") askk (posframe "1.4.4"))
+;; Package-Requires: ((emacs "29.1") (posframe "1.4.4"))
 
 ;;; Commentary:
 
@@ -14,7 +14,6 @@
 
 ;;; Code:
 
-(require 'askk)
 (require 'posframe)
 
 (defgroup askk-posframe nil
@@ -63,11 +62,7 @@ Only :background attribute is used.")
   (when-let* ((obj (plist-get askk-posframe--methods method)))
     (if (functionp obj) (apply obj args) (symbol-value obj))))
 
-(defun askk-posframe--show (&optional position candidates index)
-  (or position (setq position (1+ askk-headword--start)))
-  (or candidates (setq candidates askk-cand--candidates))
-  (or index (setq index askk-cand--index))
-
+(defun askk-posframe--show (position candidates index)
   (let ((content (askk-posframe--make-content candidates index)))
     (with-current-buffer (get-buffer-create askk-posframe--buffer t)
       (delete-region (point-min) (point-max))
