@@ -59,12 +59,16 @@ Only :background attribute is used.")
         :page-size 'askk-posframe--height))
 
 ;;;###autoload
-(defun askk-posframe-style (method)
+(defun askk-posframe-style (method &rest args)
   (when-let* ((obj (plist-get askk-posframe--methods method)))
-    (if (functionp obj) (funcall obj) (symbol-value obj))))
+    (if (functionp obj) (apply obj args) (symbol-value obj))))
 
-(defun askk-posframe--show ()
-  (let ((content (askk-posframe--make-content)))
+(defun askk-posframe--show (&optional position candidates index)
+  (or position (setq position (1+ askk-headword--start)))
+  (or candidates (setq candidates askk-cand--candidates))
+  (or index (setq index askk-cand--index))
+
+  (let ((content (askk-posframe--make-content candidates index)))
     (with-current-buffer (get-buffer-create askk-posframe--buffer t)
       (delete-region (point-min) (point-max))
       (insert content)))
@@ -73,7 +77,7 @@ Only :background attribute is used.")
          (margin-width (ceiling (* font-width askk-posframe--margin-scale))))
     (posframe-show
      askk-posframe--buffer
-     :position (1+ askk-headword--start)
+     :position position
      :max-height askk-posframe--height
      :x-pixel-offset (- 0 margin-width askk-posframe--border-width)
      :border-width askk-posframe--border-width
@@ -84,9 +88,9 @@ Only :background attribute is used.")
      :background-color (face-attribute 'askk-posframe-default
                                        :background nil t)))
 
-  (let* ((total (length askk-cand--candidates))
+  (let* ((total (length candidates))
          (last-page (/ total askk-posframe--height))
-         (page (/ askk-cand--index askk-posframe--height))
+         (page (/ index askk-posframe--height))
          (scroll-count (if (and (> page 0) (= page last-page))
                            (+ (* (1- page) askk-posframe--height)
                               (% total askk-posframe--height))
@@ -101,25 +105,25 @@ Only :background attribute is used.")
   (setq askk-posframe--lines nil)
   (posframe-delete-frame askk-posframe--buffer))
 
-(defun askk-posframe--make-content ()
+(defun askk-posframe--make-content (candidates index)
   (or askk-posframe--lines
-      (setq askk-posframe--lines (askk-posframe--make-lines)))
+      (setq askk-posframe--lines (askk-posframe--make-lines candidates)))
 
   (let ((i 0)
         lines)
     (dolist (line askk-posframe--lines)
-      (push (if (= i askk-cand--index)
+      (push (if (= i index)
                 (propertize line 'face 'askk-posframe-current)
               line)
             lines)
       (setq i (1+ i)))
     (mapconcat #'identity (nreverse lines) "\n")))
 
-(defun askk-posframe--make-lines ()
+(defun askk-posframe--make-lines (candidates)
   (let* ((font-width (default-font-width))
          (margin-width (ceiling (* font-width askk-posframe--margin-scale)))
          (margin (propertize " " 'display `(space :width (,margin-width))))
-         (widths (askk-posframe--compute-widths))
+         (widths (askk-posframe--compute-widths candidates))
          (padding-width (if (> (cdr widths) 0)
                             (ceiling (* font-width
                                         askk-posframe--padding-scale))
@@ -135,7 +139,7 @@ Only :background attribute is used.")
                                                      padding-width
                                                      (cdr widths)))))))
          lines)
-    (dolist (cand askk-cand--candidates)
+    (dolist (cand candidates)
       (push (concat margin
                     (car cand)
                     (car spaces)
@@ -149,14 +153,14 @@ Only :background attribute is used.")
             lines))
     (nreverse lines)))
 
-(defun askk-posframe--compute-widths ()
+(defun askk-posframe--compute-widths (candidates)
   (seq-reduce (lambda (acc cand)
                 (cons
                  (max (car acc) (string-pixel-width (car cand)))
                  (max (cdr acc) (or (and-let* ((annotation (cdr cand)))
                                       (string-pixel-width annotation))
                                     0))))
-              askk-cand--candidates
+              candidates
               '(0 . 0)))
 
 (provide 'askk-posframe)
