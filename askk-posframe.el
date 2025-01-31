@@ -73,7 +73,7 @@ Only :background attribute is used.")
     (posframe-show
      askk-posframe--buffer
      :position position
-     :max-height askk-posframe--height
+     :max-height (1+ askk-posframe--height)
      :x-pixel-offset (- 0 margin-width askk-posframe--border-width)
      :border-width askk-posframe--border-width
      :border-color (face-attribute 'askk-posframe-border
@@ -102,6 +102,10 @@ Only :background attribute is used.")
          (end (min (+ start askk-posframe--height) total))
          (i 0)
          lines)
+    (push (format "%s/%s"
+                  (1+ page)
+                  (1+ (ceiling (/ total askk-posframe--height))))
+          lines)
     (dolist (line (seq-subseq askk-posframe--lines start end))
       (when (= i index)
         (setq line (copy-sequence line))
