@@ -115,30 +115,24 @@ Only :background attribute is used.")
     (mapconcat #'identity (nreverse lines) "\n")))
 
 (defun askk-posframe--make-lines (candidates)
-  (let* ((font-width (default-font-width))
-         (margin-width (ceiling (* font-width askk-posframe--margin-scale)))
-         (margin (propertize " " 'display `(space :width (,margin-width))))
-         (widths (askk-posframe--compute-widths candidates))
-         (padding-width (if (> (cdr widths) 0)
-                            (ceiling (* font-width
-                                        askk-posframe--padding-scale))
-                          0))
-         (padding (propertize " " 'display `(space :width (,padding-width))))
-         (spaces (cons
-                  (propertize " " 'display
-                              `(space :align-to (,(+ margin-width
-                                                     (car widths)))))
-                  (propertize " " 'display
-                              `(space :align-to (,(+ margin-width
-                                                     (car widths)
-                                                     padding-width
-                                                     (cdr widths)))))))
+  (let* ((widths (askk-posframe--compute-widths candidates))
+         (hpos '(+ (askk-posframe--margin-scale . width)))
+         (margin (propertize " " 'display `(space :width ,hpos)))
+         spaces
          lines)
+    (setq hpos `(,@hpos (,(car widths))))
+    (if (zerop (cdr widths))
+        (setq spaces (cons (propertize " " 'display `(space :align-to ,hpos))
+                           nil))
+      (setq hpos `(,@hpos (askk-posframe--padding-scale . width)))
+      (setq spaces
+            (cons (propertize " " 'display `(space :align-to ,hpos))
+                  (propertize " " 'display
+                              `(space :align-to (,@hpos (,(cdr widths))))))))
     (dolist (cand candidates)
       (push (concat margin
                     (car cand)
                     (car spaces)
-                    padding
                     (and-let* ((annotation (cdr cand)))
                       (propertize annotation
                                   'face
