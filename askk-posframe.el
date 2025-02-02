@@ -74,7 +74,7 @@ Only :background attribute is used.")
      askk-posframe--buffer
      :position position
      :max-height (1+ askk-posframe--height)
-     :x-pixel-offset (- 0 margin-width askk-posframe--border-width)
+     :x-pixel-offset (- margin-width)
      :border-width askk-posframe--border-width
      :border-color (face-attribute 'askk-posframe-border
                                    :background nil t)
