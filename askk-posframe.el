@@ -43,6 +43,10 @@ Only :background attribute is used.")
   '((t :inherit completions-annotations))
   "Face for an annotation.")
 
+(defface askk-posframe-pagination
+  '((t :inherit mode-line-inactive :box nil))
+  "Face for a pagination.")
+
 (defvar askk-posframe--buffer " *askk-posframe*")
 (defvar askk-posframe--margin-scale .5)
 (defvar askk-posframe--padding-scale 1)
@@ -100,18 +104,17 @@ Only :background attribute is used.")
          (index (% index askk-posframe--height))
          (start (* page askk-posframe--height))
          (end (min (+ start askk-posframe--height) total))
+         (num-pages (1+ (ceiling (/ total askk-posframe--height))))
+         (pagination (askk-posframe--make-pagination page num-pages))
          (i 0)
          lines)
-    (push (format "%s/%s"
-                  (1+ page)
-                  (1+ (ceiling (/ total askk-posframe--height))))
-          lines)
     (dolist (line (seq-subseq askk-posframe--lines start end))
       (when (= i index)
         (setq line (copy-sequence line))
         (add-face-text-property 0 (length line) 'askk-posframe-current t line))
       (push line lines)
       (setq i (1+ i)))
+    (push pagination lines)
     (mapconcat #'identity (nreverse lines) "\n")))
 
 (defun askk-posframe--make-lines (candidates)
@@ -151,6 +154,15 @@ Only :background attribute is used.")
                                     0))))
               candidates
               '(0 . 0)))
+
+(defun askk-posframe--make-pagination (page num-pages)
+  (let* ((str (propertize (format "%s/%s" (1+ page) num-pages)
+                          'face 'askk-posframe-pagination))
+         (len (string-pixel-width str)))
+    (concat (propertize " "
+                        'face 'askk-posframe-pagination
+                        'display `(space :align-to (- right (,len))))
+            str)))
 
 (provide 'askk-posframe)
 ;;; askk-posframe.el ends here
