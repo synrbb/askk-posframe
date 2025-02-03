@@ -54,6 +54,7 @@ Only :background attribute is used.")
 (defvar askk-posframe--border-width 1)
 
 (defvar-local askk-posframe--lines nil)
+(defvar-local askk-posframe--frame nil)
 
 (defvar askk-posframe--methods
   (list :show #'askk-posframe--show
@@ -72,18 +73,19 @@ Only :background attribute is used.")
       (delete-region (point-min) (point-max))
       (insert content)))
 
-  (posframe-show
-   askk-posframe--buffer
-   :position position
-   :max-height (1+ askk-posframe--height)
-   :x-pixel-offset (- (askk-posframe--margin-width))
-   :border-width askk-posframe--border-width
-   :border-color (face-attribute 'askk-posframe-border
-                                 :background nil t)
-   :foreground-color (face-attribute 'askk-posframe-default
-                                     :foreground nil t)
-   :background-color (face-attribute 'askk-posframe-default
-                                     :background nil t)))
+  (setq askk-posframe--frame
+        (posframe-show
+         askk-posframe--buffer
+         :position position
+         :max-height (1+ askk-posframe--height)
+         :x-pixel-offset (- (askk-posframe--margin-width))
+         :border-width askk-posframe--border-width
+         :border-color (face-attribute 'askk-posframe-border
+                                       :background nil t)
+         :foreground-color (face-attribute 'askk-posframe-default
+                                           :foreground nil t)
+         :background-color (face-attribute 'askk-posframe-default
+                                           :background nil t))))
 
 (defun askk-posframe--hide ()
   (setq askk-posframe--lines nil)
@@ -91,6 +93,7 @@ Only :background attribute is used.")
 
 (defun askk-posframe--cleanup ()
   (setq askk-posframe--lines nil)
+  (setq askk-posframe--frame nil)
   (posframe-delete-frame askk-posframe--buffer))
 
 (defun askk-posframe--make-content (candidates index)
@@ -127,7 +130,9 @@ Only :background attribute is used.")
                   (setq hpos (+ hpos (askk-posframe--padding-width)))
                   (propertize " " 'display `(space :align-to (,hpos))))
                 (propertize " " 'display
-                            `(space :align-to (,(+ hpos (cdr widths)))))))
+                            `(space :align-to
+                                    (,(max (+ hpos (cdr widths))
+                                           (askk-posframe--min-hpos)))))))
     (dolist (cand candidates)
       (push (concat margin
                     (car cand)
@@ -159,6 +164,12 @@ Only :background attribute is used.")
                         'face 'askk-posframe-pagination
                         'display `(space :align-to (- right (,len))))
             str)))
+
+(defun askk-posframe--min-hpos ()
+  (if askk-posframe--frame
+      (- (frame-text-width askk-posframe--frame)
+         (askk-posframe--margin-width))
+    0))
 
 (defun askk-posframe--margin-width ()
   (ceiling (* (default-font-width) askk-posframe--margin-scale)))
